@@ -2,7 +2,7 @@
   "name": "wordle",
   "version": "0.1.0",
   "private": false,
-  "homepage": "https://github.com/huyplb/wordle-game",
+  "homepage": "https://huyplb.github.io/wordle-game",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
