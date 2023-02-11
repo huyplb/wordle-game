@@ -96,3 +96,11 @@ button.shake{
 		animation-timing-function: ease-in;
 	}
 }
+
+.fade-in {
+  animation: fade-in 2s linear;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
