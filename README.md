@@ -4,6 +4,8 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Welcome to playground React JS with Bulma Css
 
+Link test
+https://huyplb.github.io/wordle-game/index
 
 ## Available Scripts
 
