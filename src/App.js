@@ -59,11 +59,18 @@ function App() {
         }
   }
 
-    useEffect(() => {
-      if (rightGuessString === "") {
-        fetchData();
-      }
-    },[])
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyUp);
+
+    return () => window.removeEventListener("keydown", handleKeyUp);
+  });
+
+
+  useEffect(() => {
+    if (rightGuessString === "") {
+      fetchData();
+    }
+  },[])
 
   const startGame = () =>{
     setGuessesRemaining(NUMBER_OF_GUESSES)
@@ -112,26 +119,37 @@ function App() {
     if (grid[0][0] === "")
       return
     let row = NUMBER_OF_GUESSES - guessesRemaining; 
-    changeValue(row,nextLetter,"")  
+    let titlePointer = nextLetter - 1
     if (nextLetter === 0) {
       setNextLetter(0)
+      changePoniter(row,titlePointer,"is-light is-warning")
       return
     }
-    setNextLetter(nextLetter - 1)
+    if (nextLetter > 3) {
+      titlePointer = 3
+      setNextLetter(3)
+    }
+    changePoniter(row,nextLetter,"is-light")
+    changeValue(row,titlePointer,"")  
+    setNextLetter(titlePointer)
+    changePoniter(row,titlePointer,"is-light is-warning")
+
+
   }
 
   const addCharacter = (character) => {
     
     let row = NUMBER_OF_GUESSES - guessesRemaining;
-    changePoniter(row,nextLetter-1,"is-light")
 
-    if (nextLetter === 3) {
-      changeValue(row,nextLetter,character)
-      if (grid[row][nextLetter] !== ""){
-        changePoniter(row,nextLetter,"is-light is-warning")
-      }
+    if (nextLetter > 3) {
       return
+      // changeValue(row,nextLetter,character)
+      // if (grid[row][nextLetter] !== ""){
+      //   changePoniter(row,nextLetter,"is-light is-warning")
+      // }
+      // return
     }
+    changePoniter(row,nextLetter-1,"is-light")
     changeValue(row,nextLetter,character)
     setNextLetter(nextLetter + 1)
 
@@ -139,7 +157,6 @@ function App() {
   }
 
   const checkGuess= () => {
-    
     let row = NUMBER_OF_GUESSES - guessesRemaining;
     let guessString = "";
     let rightGuess = Array.from(rightGuessString);
@@ -157,12 +174,6 @@ function App() {
       setGuessesRemaining(guessesRemaining - 1)
       setNextLetter(0)
     }
-
-    // const exists = words.filter(w => w.word === guessString);
-    // if (!exists) {
-    //   console.log("Word not in list!");
-    //   return;
-    // }
   
     const changeColor = [...gridcolor];
     //check green
@@ -185,6 +196,9 @@ function App() {
     }
 
     setGridcolor(changeColor);
+    if (nextLetter > 3)
+      changePoniter(row,3,"is-light")
+
     changePoniter(row,nextLetter,"is-light")
     if ((row + 1) < NUMBER_OF_GUESSES)
       changePoniter(row+1,0,"is-light is-warning")
@@ -194,14 +208,14 @@ function App() {
           changeColor[row][i] = "is-success shake";
       }
        // Show popup congratulation
-       debugger
-       setIsmodal(true)
+      setIsmodal(true)
       setGridcolor(changeColor);
       setGuessesRemaining(0)
      
       return;
     } else {
-      setGuessesRemaining(-1)
+      setGuessesRemaining(guessesRemaining-1)
+      
       setNextLetter(0)
       currentGuess = [];
       if (guessesRemaining === 0) {
@@ -224,7 +238,7 @@ function App() {
 
   return (
     <div style={{ backgroundColor: isDark ? 'black' : 'white' }}
-    onKeyUp={(e) => handleKeyUp(e)} className={"container Game-board "}>   
+    className={"container Game-board "}>   
     <nav style={{width: "100%", backgroundColor: isDark ? 'black' : 'white'}}  className="navbar" role="navigation" aria-label="main navigation">
       <div className="navbar-end">
           <div className="navbar-item">
