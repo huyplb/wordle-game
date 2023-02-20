@@ -1,33 +1,26 @@
 import { useState,useEffect } from "react";
-// import { WORDS } from "./words.js";
 import './App.css';
 import congrats from './congrats_fkscna.gif'; // with import
 
-
-// let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)];
-// console.log(rightGuessString);
 var words ;
 var word;
-let rightGuessString = "";
+let theAnswer = "";
 let hintGuessString = "";
 
 
 function App() {
   const wordLength = 4
-  const NUMBER_OF_GUESSES = 4;
+  const guessing_times = 4;
   const [show, setShow] = useState(false);
   const [instruction, setInstruction] = useState(false);
-  const [ismodal, setIsmodal] = useState(false);
-
-
-  
+  const [modal, setModal] = useState(false);
   const [isDark, setDark] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [nextLetter,setNextLetter] = useState(0)
-  const [guessesRemaining,setGuessesRemaining] = useState(NUMBER_OF_GUESSES)
-  const [grid, setGrid] = useState([["", "", "", ""],["", "", "", ""],["", "", "", ""],["", "", "", ""]]);
-  const [gridcolor, setGridcolor] = useState([["is-light is-warning", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"]]);
+  const [tile_index,setTileIndex] = useState(0)
+  const [answerRemaining,setAnswerRemaining] = useState(guessing_times)
+  const [matrix, setMatrix] = useState([["", "", "", ""],["", "", "", ""],["", "", "", ""],["", "", "", ""]]);
+  const [matrixCss, setMatrixCss] = useState([["is-light is-warning", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"]]);
   
   const readStream = async (stream) => {
     const reader = stream.getReader();
@@ -49,13 +42,13 @@ function App() {
         });
         const stream = await res.body;
         const data = await readStream(stream);
-        if (rightGuessString === "") {
+        if (theAnswer === "") {
           words = data["dictionary"];
           word= words[Math.floor(Math.random() * words.length)];
-          rightGuessString = word["word"]
+          theAnswer = word["word"]
           hintGuessString = word["hint"]
           setLoading(false);
-          console.log(rightGuessString);
+          console.log(theAnswer);
         }
   }
 
@@ -67,25 +60,29 @@ function App() {
 
 
   useEffect(() => {
-    if (rightGuessString === "") {
+    if (theAnswer === "") {
       fetchData();
     }
   },[])
 
   const startGame = () =>{
-    setGuessesRemaining(NUMBER_OF_GUESSES)
-    setNextLetter(0)
-    setGrid([["", "", "", ""],["", "", "", ""],["", "", "", ""],["", "", "", ""]]);
-    setGridcolor([["is-light is-outlined", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"]]);
-  
+
+    word= words[Math.floor(Math.random() * words.length)];
+    theAnswer = word["word"]
+    hintGuessString = word["hint"]
+    console.log(theAnswer)
+    setAnswerRemaining(guessing_times)
+    setTileIndex(0)
+    setMatrix([["", "", "", ""],["", "", "", ""],["", "", "", ""],["", "", "", ""]]);
+    setMatrixCss([["is-light is-warning", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"],["is-light", "is-light", "is-light", "is-light"]]);
+    
   }
 
   const handleKeyUp = (e) => {
-    // debugger
     let pressedKey = String(e.key);
     let found = pressedKey.match(/[a-z]/gi);
     
-   if (pressedKey === "Backspace" && nextLetter > -1) {
+   if (pressedKey === "Backspace" && tile_index > -1) {
     deleteLetter();
     return;
   }
@@ -103,65 +100,60 @@ function App() {
   
 
   const changeValue = (x, y, value) => {
-    const updatedGrid = [...grid];
-    updatedGrid[x][y] = value;
-    setGrid(updatedGrid);
+    const updatedMatrix = [...matrix];
+    updatedMatrix[x][y] = value;
+    setMatrix(updatedMatrix);
   };
 
-  const changePoniter = (x, y, value) => {
-    const updatedGrid = [...gridcolor];
-    updatedGrid[x][y] = value;
-    setGridcolor(updatedGrid);
+  const changePointer = (x, y, value) => {
+    const updatedMatrix = [...matrixCss];
+    updatedMatrix[x][y] = value;
+    setMatrixCss(updatedMatrix);
   };
 
 
   const deleteLetter = () => {
-    if (grid[0][0] === "")
+    if (matrix[0][0] === "")
       return
-    let row = NUMBER_OF_GUESSES - guessesRemaining; 
-    let titlePointer = nextLetter - 1
-    if (nextLetter === 0) {
-      setNextLetter(0)
-      changePoniter(row,titlePointer,"is-light is-warning")
+    let row = guessing_times - answerRemaining; 
+    let titlePointer = tile_index - 1
+    if (tile_index === 0) {
+      setTileIndex(0)
+      changePointer(row,titlePointer,"is-light is-warning")
       return
     }
-    if (nextLetter > 3) {
+    if (tile_index > 3) {
       titlePointer = 3
-      setNextLetter(3)
+      setTileIndex(3)
     }
-    changePoniter(row,nextLetter,"is-light")
+    changePointer(row,tile_index,"is-light")
     changeValue(row,titlePointer,"")  
-    setNextLetter(titlePointer)
-    changePoniter(row,titlePointer,"is-light is-warning")
+    setTileIndex(titlePointer)
+    changePointer(row,titlePointer,"is-light is-warning")
 
 
   }
 
   const addCharacter = (character) => {
     
-    let row = NUMBER_OF_GUESSES - guessesRemaining;
+    let row = guessing_times - answerRemaining;
 
-    if (nextLetter > 3) {
+    if (tile_index > 3) {
       return
-      // changeValue(row,nextLetter,character)
-      // if (grid[row][nextLetter] !== ""){
-      //   changePoniter(row,nextLetter,"is-light is-warning")
-      // }
-      // return
     }
-    changePoniter(row,nextLetter-1,"is-light")
-    changeValue(row,nextLetter,character)
-    setNextLetter(nextLetter + 1)
+    changePointer(row,tile_index-1,"is-light")
+    changeValue(row,tile_index,character)
+    setTileIndex(tile_index + 1)
 
-    changePoniter(row,nextLetter,"is-light is-warning")
+    changePointer(row,tile_index,"is-light is-warning")
   }
 
   const checkGuess= () => {
-    let row = NUMBER_OF_GUESSES - guessesRemaining;
+    let row = guessing_times - answerRemaining;
     let guessString = "";
-    let rightGuess = Array.from(rightGuessString);
+    let rightGuess = Array.from(theAnswer);
 
-    let currentGuess = grid[row];
+    let currentGuess = matrix[row];
     for (const val of currentGuess) {
       guessString += val;
     }
@@ -171,11 +163,11 @@ function App() {
       return;
     }
     else {
-      setGuessesRemaining(guessesRemaining - 1)
-      setNextLetter(0)
+      setAnswerRemaining(answerRemaining - 1)
+      setTileIndex(0)
     }
   
-    const changeColor = [...gridcolor];
+    const changeColor = [...matrixCss];
     //check green
     for (let i = 0; i < wordLength; i++) {
       if (rightGuess[i].toLowerCase() === currentGuess[i].toLowerCase()) {   
@@ -195,31 +187,31 @@ function App() {
       }
     }
 
-    setGridcolor(changeColor);
-    if (nextLetter > 3)
-      changePoniter(row,3,"is-light")
+    setMatrixCss(changeColor);
+    if (tile_index > 3)
+      changePointer(row,3,"is-light")
 
-    changePoniter(row,nextLetter,"is-light")
-    if ((row + 1) < NUMBER_OF_GUESSES)
-      changePoniter(row+1,0,"is-light is-warning")
+    changePointer(row,tile_index,"is-light")
+    if ((row + 1) < guessing_times)
+      changePointer(row+1,0,"is-light is-warning")
 
-    if (guessString.toLowerCase() === rightGuessString.toLowerCase()) {
+    if (guessString.toLowerCase() === theAnswer.toLowerCase()) {
       for (let i = 0; i < wordLength; i++) {
           changeColor[row][i] = "is-success shake";
       }
        // Show popup congratulation
-      setIsmodal(true)
-      setGridcolor(changeColor);
-      setGuessesRemaining(0)
+      setModal(true)
+      setMatrixCss(changeColor);
+      setAnswerRemaining(0)
      
       return;
     } else {
-      setGuessesRemaining(guessesRemaining-1)
+      setAnswerRemaining(answerRemaining-1)
       
-      setNextLetter(0)
+      setTileIndex(0)
       currentGuess = [];
-      if (guessesRemaining === 0) {
-        alert(`You've run out of guesses! Game over! . The right word was: "${rightGuessString}"`);
+      if (answerRemaining === 0) {
+        alert(`You've run out of guesses! Game over! . The right word was: "${theAnswer}"`);
       }
     }
   }
@@ -227,7 +219,7 @@ function App() {
   const showModal = () => 
   (
       <div className={`modal is-active`}>
-        <div className="modal-background" onClick={() => setIsmodal(false)} />
+        <div className="modal-background" onClick={() => setModal(false)} />
         <div className="modal-card">
           <section className="modal-card-body">
             <img src={congrats}/>
@@ -259,12 +251,12 @@ function App() {
     <h1 className="title">Welcome to Wordle Game!</h1>
     <br/>
       {
-        grid.map((row, i) => (
+        matrix.map((row, i) => (
         <div key={i} className='buttons'  >
           {
             row.map((col, j) => (
-            <button key={j} className={ 'button ' +  gridcolor[i][j] + ' letter'  }>
-              {grid[i][j] === 0? "": grid[i][j] }
+            <button key={j} className={ 'button ' +  matrixCss[i][j] + ' letter'  }>
+              {matrix[i][j] === 0? "": matrix[i][j] }
             </button>
           ))}
         </div>
@@ -277,7 +269,7 @@ function App() {
       ) : (
         <button className={ 'button is-primary ' } onClick={() => startGame()}> Start Game </button>
       )}
-      {ismodal && showModal()}
+      {modal && showModal()}
     </div>
   );
 }
